@@ -1,0 +1,40 @@
+name: Build Windows Binary
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker for Windows Cross-Compilation
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Cross-compile Windows Binary
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: windows/amd64
+          outputs: type=local,dest=dist/windows
+          file: Dockerfile.crosscompile
+
+      - name: Upload Windows Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-binary
+          path: dist/windows/select_best_images.exe

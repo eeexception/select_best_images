@@ -1,16 +1,30 @@
 # Dockerfile.crosscompile
+
+# Use Ubuntu as the base image
 FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip wine-stable
+# Install necessary tools, Wine, and other dependencies
+RUN dpkg --add-architecture i386 && apt-get update && apt-get install -y \
+    wget \
+    wine-stable \
+    wine32 \
+    unzip
 
+# Download and install Python for Windows using Wine
+RUN wget https://www.python.org/ftp/python/3.10.9/python-3.10.9-amd64.exe -O python-installer.exe && \
+    wine start /wait python-installer.exe /quiet InstallAllUsers=1 PrependPath=1
+
+# Copy the application code to the container
 COPY . /app
 WORKDIR /app
 
-RUN python3 -m pip install --upgrade pip \
-    && pip install -r requirements.txt \
-    && pip install pyinstaller
+# Install dependencies using Windows Python through Wine
+RUN wine python.exe -m pip install --upgrade pip \
+    && wine python.exe -m pip install pyinstaller \
+    && wine python.exe -m pip install -r requirements.txt
 
-RUN pyinstaller --onefile select_best_images.py
+# Use PyInstaller with Wine to create a Windows executable
+RUN wine pyinstaller --onefile select_best_images.py
 
+# Move the output to a dedicated directory
 RUN mkdir -p /output && mv dist/select_best_images.exe /output/
