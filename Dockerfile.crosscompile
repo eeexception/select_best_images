@@ -1,0 +1,16 @@
+# Dockerfile.crosscompile
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip wine-stable
+
+COPY . /app
+WORKDIR /app
+
+RUN python3 -m pip install --upgrade pip \
+    && pip install -r requirements.txt \
+    && pip install pyinstaller
+
+RUN pyinstaller --onefile select_best_images.py
+
+RUN mkdir -p /output && mv dist/select_best_images.exe /output/
