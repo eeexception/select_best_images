@@ -48,7 +48,7 @@ jobs:
         context: .
         platforms: windows/amd64
         outputs: type=local,dest=dist/windows
-        file: Dockerfile.crosscompile
+        file: .github/workflows/Dockerfile.crosscompile
 
     - name: Create Release
       id: create_release
